@@ -43,7 +43,15 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
             cell.starsLabel.text = "\(self.fetchedRepos[indexPath.row].stars!)"
             cell.forkLabel.text = "\(self.fetchedRepos[indexPath.row].forks!)"
             cell.repoNameLabel.text = self.fetchedRepos[indexPath.row].name!
-        }
+            let url = NSURL(string: self.fetchedRepos[indexPath.row].ownerAvatarURL!)!
+            let request = NSURLRequest(URL: url)
+            NSURLConnection.sendAsynchronousRequest(request, queue: NSOperationQueue.mainQueue()) { (response, data, error) -> Void in
+                    if error == nil {
+                        let image = UIImage (data: data!)
+                        cell.avatarImageView.image = image
+                    }
+                }
+            }
         return cell
     }
     
@@ -52,7 +60,7 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
         MBProgressHUD.showHUDAddedTo(self.view, animated: true)
         GithubRepo.fetchRepos(searchSettings, successCallback: { (repos) -> Void in
             self.fetchedRepos = repos
-//            fetchedRepos.removeAll()
+
 //            for repo in repos {
 //                print("[Name: \(repo.name!)]" +
 //                    "\n\t[Stars: \(repo.stars!)]" +
