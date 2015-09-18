@@ -11,6 +11,7 @@ import UIKit
 class ViewController: UIViewController, UITableViewDataSource, UITableViewDelegate {
     var searchBar: UISearchBar!
     var searchSettings = GithubRepoSearchSettings()
+    var fetchedRepos:[GithubRepo] = []
 
     @IBOutlet weak var reposTableView: UITableView!
     override func viewDidLoad() {
@@ -28,7 +29,7 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
     }
     
     func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int{
-        return 10
+        return fetchedRepos.count
     }
     
     // Row display. Implementers should *always* try to reuse cells by setting each cell's reuseIdentifier and querying for available reusable cells with dequeueReusableCellWithIdentifier:
@@ -36,6 +37,13 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
     
     func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell{
         let cell = tableView.dequeueReusableCellWithIdentifier("RepoCell", forIndexPath: indexPath) as! RepoTableViewCell
+        if fetchedRepos.count > 0{
+            cell.descriptionLabel.text = self.fetchedRepos[indexPath.row].description!
+            cell.ownerLabel.text = self.fetchedRepos[indexPath.row].ownerHandle!
+            cell.starsLabel.text = "\(self.fetchedRepos[indexPath.row].stars!)"
+            cell.forkLabel.text = "\(self.fetchedRepos[indexPath.row].forks!)"
+            cell.repoNameLabel.text = self.fetchedRepos[indexPath.row].name!
+        }
         return cell
     }
     
@@ -43,13 +51,17 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
     private func doSearch() {
         MBProgressHUD.showHUDAddedTo(self.view, animated: true)
         GithubRepo.fetchRepos(searchSettings, successCallback: { (repos) -> Void in
-            for repo in repos {
-                print("[Name: \(repo.name!)]" +
-                    "\n\t[Stars: \(repo.stars!)]" +
-                    "\n\t[Forks: \(repo.forks!)]" +
-                    "\n\t[Owner: \(repo.ownerHandle!)]" +
-                    "\n\t[Avatar: \(repo.ownerAvatarURL!)] \n\t[Description: \(repo.description!)]")
-            }
+            self.fetchedRepos = repos
+//            fetchedRepos.removeAll()
+//            for repo in repos {
+//                print("[Name: \(repo.name!)]" +
+//                    "\n\t[Stars: \(repo.stars!)]" +
+//                    "\n\t[Forks: \(repo.forks!)]" +
+//                    "\n\t[Owner: \(repo.ownerHandle!)]" +
+//                    "\n\t[Avatar: \(repo.ownerAvatarURL!)] \n\t[Description: \(repo.description!)]")
+//                fetchedRepos.append(repo)
+//            }
+            self.reposTableView.reloadData()
             MBProgressHUD.hideHUDForView(self.view, animated: true)
         }, error: { (error) -> Void in
             print(error)
